@@ -6,7 +6,9 @@ import java.util.UUID;
 
 public record CreateWaitingRoomRequest(
         WaitingRooms.GameType GameType,
-        String userRole
+        String userRole,
+        String userId,
+        String nickname
 ) {
     public WaitingRooms toEntityPublic(){
         return WaitingRooms.builder()

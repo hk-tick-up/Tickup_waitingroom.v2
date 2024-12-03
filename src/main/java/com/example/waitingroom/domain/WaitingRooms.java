@@ -51,4 +51,12 @@ public class WaitingRooms {
         }
         return false;
     }
+
+    public boolean decrementParticipants() {
+        if (this.participants > 0) {
+            this.participants--;
+            return true;
+        }
+        return false;
+    }
 }
