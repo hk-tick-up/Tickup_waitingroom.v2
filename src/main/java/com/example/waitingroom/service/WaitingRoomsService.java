@@ -13,7 +13,7 @@ import java.util.List;
 public interface WaitingRoomsService {
     WaitingRooms createWaitingGameRoom(CreateWaitingRoomRequest CWReq, HttpServletRequest httpRequest);
     WaitingRooms joinPrivateWaitingRoom(String gameRoomCode, HttpServletRequest httpRequest);
-    WaitingRooms createOrJoinPublicRoom(CreateWaitingRoomRequest req, HttpServletRequest httpRequest);
+    WaitingRooms createOrJoinPublicRoom(CreateWaitingRoomRequest req);
     WaitingRooms createContestWaitingRoom(CreateWaitingRoomRequest req);
     WaitingRooms joinContestWaitingRoom(Long gameRoomId);
     void updateRoomParticipants(Long gameRoomId, int participants);

@@ -38,8 +38,9 @@ public class WaitingRoomController {
     public ResponseEntity<?> joinPrivateWaitingRoom(@PathVariable String gameRoomCode) {
         Long roomId = waitingRoomsService.findRoomIdByCode(gameRoomCode);
         if (roomId != null) {
-            Map<String, Long> response = new HashMap<>();
+            Map<String, Object> response = new HashMap<>();
             response.put("roomId", roomId);
+            response.put("gameRoomCode", gameRoomCode);
             return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.notFound().build();
@@ -53,9 +54,17 @@ public class WaitingRoomController {
     }
 
     @PostMapping("/random-join")
-    public ResponseEntity<?> createOrJoinPublicRoom(@RequestBody CreateWaitingRoomRequest request, HttpServletRequest httpRequest) {
-        WaitingRooms room = waitingRoomsService.createOrJoinPublicRoom(request, httpRequest);
-        return ResponseEntity.ok(room);
+    public ResponseEntity<?> createOrJoinPublicRoom(@RequestBody CreateWaitingRoomRequest request) {
+        WaitingRooms room = waitingRoomsService.createOrJoinPublicRoom(request);
+        if (room != null) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("roomId", room.getId());
+            response.put("gameRoomCode", room.getGameRoomCode());
+            response.put("isPublic", room.isPublic());
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/participants/{waitingRoomId}")

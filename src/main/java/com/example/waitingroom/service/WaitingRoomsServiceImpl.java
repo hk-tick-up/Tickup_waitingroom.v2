@@ -91,8 +91,8 @@ public class WaitingRoomsServiceImpl implements WaitingRoomsService {
     }
 
     //랜덤 공개방을 만들거나 참여하는 API
-    public WaitingRooms createOrJoinPublicRoom(CreateWaitingRoomRequest req, HttpServletRequest httpRequest) {
-        validateUserSession(httpRequest);
+    public WaitingRooms createOrJoinPublicRoom(CreateWaitingRoomRequest req) {
+//        validateUserSession(httpRequest);
         WaitingRooms.GameType GameType = null;
 
         if (req.GameType() == WaitingRooms.GameType.Contest && !req.userRole().equals("Admin")) {
