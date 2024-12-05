@@ -17,9 +17,10 @@ public interface WaitingRoomsService {
     WaitingRooms createContestWaitingRoom(CreateWaitingRoomRequest req);
     WaitingRooms joinContestWaitingRoom(Long gameRoomId);
     void updateRoomParticipants(Long gameRoomId, int participants);
-    void addParticipantToRoom(Long gameRoomId, ParticipantsInfo participant);
+    void addParticipantToRoom(Long gameRoomId, HttpServletRequest httpRequest);
     void validateUserSession(HttpServletRequest httpRequest);
     List<ParticipantsInfo> getParticipantsFromRedis(Long gameRoomId);
     void removeParticipantsFromRoom(Long roomId, String userId);
+    void decrementParticipants(Long gameRoomId);
 }
 

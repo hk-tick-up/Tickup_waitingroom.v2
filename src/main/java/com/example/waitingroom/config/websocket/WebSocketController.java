@@ -2,7 +2,9 @@ package com.example.waitingroom.config.websocket;
 
 import com.example.waitingroom.domain.ParticipantsInfo;
 import com.example.waitingroom.repository.RedisParticipantsRepository;
+import com.example.waitingroom.repository.WaitingRoomRepository;
 import com.example.waitingroom.service.WaitingRoomsService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -12,43 +14,49 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
 public class WebSocketController {
     private final RedisParticipantsRepository redisParticipantsRepository;
     private final WaitingRoomsService waitingRoomsService;
+    private final WaitingRoomRepository waitingRoomRepository;
 
     @MessageMapping("/waiting-room/{gameRoomId}")
     @SendTo("/topic/waiting-room/{gameRoomId}")
-    public List<ParticipantsInfo> handleJoinRoom(
+    public List<ParticipantsInfo> addParticipant(
             @DestinationVariable Long gameRoomId,
-            WebSocketSession session,
-            ParticipantsInfo participant
+            ParticipantsInfo participant,
+            HttpServletRequest request
     ) {
-        System.out.println("connect");
-        // Redis에 참가자 추가
-        waitingRoomsService.addParticipantToRoom(gameRoomId, participant);
-
-        // 업데이트된 참가자 목록 반환
+        waitingRoomsService.addParticipantToRoom(gameRoomId, request);
         return redisParticipantsRepository.getParticipants(gameRoomId);
     }
 
+
     @MessageMapping("/waiting-room/{gameRoomId}/leave")
-    @SendTo("/topic/waiting-room/{gameRoomId}")
+    @SendTo("/topic/waiting-room/{gameRoomId}/leave")
     public List<ParticipantsInfo> handleLeaveRoom(
             @DestinationVariable Long gameRoomId,
-            @Payload String userId
+            @Payload Map<String, String> payload
     ) {
-        // Redis에서 참가자 제거
-        waitingRoomsService.removeParticipantsFromRoom(gameRoomId, userId);
+       try {
+           String userId = payload.get("userId");
+           waitingRoomsService.decrementParticipants(gameRoomId);
 
-        // 업데이트된 참가자 목록 반환
-        return redisParticipantsRepository.getParticipants(gameRoomId);
+           // Redis에서 참가자 제거
+//           waitingRoomsService.removeParticipantsFromRoom(gameRoomId, userId);
+
+           // 업데이트된 참가자 목록 반환
+           return redisParticipantsRepository.getParticipants(gameRoomId);
+       } catch (Exception e) {
+           throw e;
+       }
     }
 
     @MessageMapping("/waiting-room/{gameRoomId}/status")
-    @SendTo("/topic/waiting-room/{gameRoomId}")
+    @SendTo("/topic/waiting-room/{gameRoomId}/status")
     public List<ParticipantsInfo> handleStatusUpdate(
             @DestinationVariable Long gameRoomId,
             @Payload ParticipantsInfo participant

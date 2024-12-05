@@ -10,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/waiting-room")
@@ -22,6 +24,7 @@ public class WaitingRoomController {
     @PostMapping("/create-private")
     public ResponseEntity<?> createPrivateWaitingRoom(@RequestBody CreateWaitingRoomRequest CWReq, HttpServletRequest HSReq) {
         WaitingRooms newWaitingRoom = waitingRoomsService.createWaitingGameRoom(CWReq, HSReq);
+        System.out.println(HSReq.getSession());
         return ResponseEntity.ok(newWaitingRoom);
     }
 
@@ -32,9 +35,15 @@ public class WaitingRoomController {
     }
 
     @PostMapping("/join/{gameRoomCode}")
-    public ResponseEntity<?> joinPrivateWaitingRoom(@PathVariable String gameRoomCode, HttpServletRequest httpRequest) {
-       WaitingRooms waitingRoom = waitingRoomsService.joinPrivateWaitingRoom(gameRoomCode, httpRequest);
-       return ResponseEntity.ok(waitingRoom);
+    public ResponseEntity<?> joinPrivateWaitingRoom(@PathVariable String gameRoomCode) {
+        Long roomId = waitingRoomsService.findRoomIdByCode(gameRoomCode);
+        if (roomId != null) {
+            Map<String, Long> response = new HashMap<>();
+            response.put("roomId", roomId);
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/join/contest")

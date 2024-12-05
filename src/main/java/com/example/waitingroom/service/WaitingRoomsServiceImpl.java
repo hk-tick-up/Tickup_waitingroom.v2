@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -85,7 +86,7 @@ public class WaitingRoomsServiceImpl implements WaitingRoomsService {
             throw new IllegalArgumentException("방이 가득 찼습니다.");
         }
 
-        addParticipantToRoom(waitingRoom.getId(), (ParticipantsInfo) httpRequest);
+        addParticipantToRoom(waitingRoom.getId(), httpRequest);
         return waitingRoomRepository.save(waitingRoom);
     }
 
@@ -171,13 +172,16 @@ public class WaitingRoomsServiceImpl implements WaitingRoomsService {
         return redisParticipantsRepository.getParticipants(gameRoomId);
     }
 
-    public void addParticipantToRoom(Long gameRoomId, ParticipantsInfo participant) {
-        if (participant == null || participant.getUserId() == null || participant.getNickname() == null) {
-            throw new IllegalArgumentException("참가자 정보가 유효하지 않습니다.");
+    public void addParticipantToRoom(Long gameRoomId, HttpServletRequest httpRequest) {
+        String userId = (String) httpRequest.getSession().getAttribute("userId");
+        String userName = (String) httpRequest.getSession().getAttribute("userName");
+
+        if (userId == null || userName == null) {
+            throw new IllegalArgumentException("세션에 유저 정보가 없습니다.");
         }
 
         List<ParticipantsInfo> participants = redisParticipantsRepository.getParticipants(gameRoomId);
-        participants.add(participant);
+        participants.add(new ParticipantsInfo(userId, userName));
         redisParticipantsRepository.saveParticipants(gameRoomId, participants);
 
         messagingTemplate.convertAndSend(
@@ -186,18 +190,25 @@ public class WaitingRoomsServiceImpl implements WaitingRoomsService {
         );
     }
 
+    @Transactional
+    public void decrementParticipants(Long gameRoomId) {
+        WaitingRooms waitingRooms = waitingRoomRepository.findWaitingRoomsById(gameRoomId);
+        if (waitingRooms == null ) throw new IllegalArgumentException("존재하지 않는 방입니다.");
+        if (!waitingRooms.decrementParticipants()) throw new IllegalArgumentException("참가자 수 감소 실패");
+
+        waitingRoomRepository.save(waitingRooms);
+
+        if (waitingRooms.getParticipants() == 0 ) waitingRoomRepository.deleteById(gameRoomId);
+    }
+
     public void removeParticipantsFromRoom(Long gameRoomId, String userId) {
-        if (userId == null || userId.isEmpty()) {
-            throw new IllegalArgumentException("유효하지 않은 사용자 ID입니다.");
-        }
+        if (userId == null || userId.isEmpty()) throw new IllegalArgumentException("유효하지 않은 사용자 ID입니다.");
 
         List<ParticipantsInfo> participants = redisParticipantsRepository.getParticipants(gameRoomId);
 
         boolean removed = participants.removeIf(p -> p.getUserId().equals(userId));
 
-        if (!removed) {
-            throw new IllegalArgumentException("참가자 목록에 해당 유저가 존재하지 않습니다.");
-        }
+        if (!removed) throw new IllegalArgumentException("참가자 목록에 해당 유저가 존재하지 않습니다.");
 
         WaitingRooms waitingRoom = waitingRoomRepository.findById(gameRoomId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게임 방입니다."));
@@ -209,6 +220,11 @@ public class WaitingRoomsServiceImpl implements WaitingRoomsService {
                 "/topic/waiting-room/" + gameRoomId,
                 participants
         );
+    }
+
+    public Long findRoomIdByCode(String gameRoomCode) {
+        WaitingRooms waitingRooms = waitingRoomRepository.findByGameRoomCode(gameRoomCode);
+        return waitingRooms != null ? waitingRooms.getId() : null;
     }
 
 }

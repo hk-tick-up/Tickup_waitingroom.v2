@@ -38,6 +38,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers(
+                            "/game/**",
                             "/waiting-room/**",
                                     "/ws",
                                     "/topic/**",
