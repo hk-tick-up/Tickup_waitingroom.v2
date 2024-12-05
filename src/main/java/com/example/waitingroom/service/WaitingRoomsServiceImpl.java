@@ -222,9 +222,8 @@ public class WaitingRoomsServiceImpl implements WaitingRoomsService {
         );
     }
 
-    public Long findRoomIdByCode(String gameRoomCode) {
-        WaitingRooms waitingRooms = waitingRoomRepository.findByGameRoomCode(gameRoomCode);
-        return waitingRooms != null ? waitingRooms.getId() : null;
+    public WaitingRooms findRoomIdByCode(String gameRoomCode) {
+        return waitingRoomRepository.findByGameRoomCode(gameRoomCode);
     }
 
 }
