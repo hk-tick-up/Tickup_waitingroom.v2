@@ -25,14 +25,15 @@ public class WaitingRooms {
     private int participants;
     @Column(name="max_participants")
     private Integer maxParticipants;
-    @Column(name="is_public", updatable = false)
-    private boolean isPublic;
+//    @Column(name="is_public", updatable = false)
+//    private boolean isPublic;
     @Column(name="is_started")
     private boolean isStarted;
 
     public enum GameType {
         Basic,
-        Contest;
+        Contest,
+        Private;
 
         public static boolean checking(String type) {
             try {
@@ -47,6 +48,14 @@ public class WaitingRooms {
     public boolean incrementParticipants(){
         if(this.participants < this.maxParticipants) {
             this.participants++;
+            return true;
+        }
+        return false;
+    }
+
+    public boolean decrementParticipants() {
+        if (this.participants > 0) {
+            this.participants--;
             return true;
         }
         return false;

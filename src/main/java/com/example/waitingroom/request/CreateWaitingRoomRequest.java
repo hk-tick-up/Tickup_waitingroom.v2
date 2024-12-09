@@ -6,7 +6,9 @@ import java.util.UUID;
 
 public record CreateWaitingRoomRequest(
         WaitingRooms.GameType GameType,
-        String userRole
+        String userRole,
+        String userId,
+        String nickname
 ) {
     public WaitingRooms toEntityPublic(){
         return WaitingRooms.builder()
@@ -14,7 +16,6 @@ public record CreateWaitingRoomRequest(
                 .gameType(WaitingRooms.GameType.Basic)
                 .participants(1)
                 .maxParticipants(5)
-                .isPublic(true)
                 .isStarted(false)
                 .build();
     }
@@ -23,10 +24,9 @@ public record CreateWaitingRoomRequest(
         String randomCode = uuid.toString().substring(0,5).toUpperCase();
         return WaitingRooms.builder()
                 .gameRoomCode(randomCode)
-                .gameType(WaitingRooms.GameType.Basic)
+                .gameType(WaitingRooms.GameType.Private)
                 .maxParticipants(5)
                 .participants(1)
-                .isPublic(false)
                 .isStarted(false)
                 .build();
     }
@@ -35,7 +35,6 @@ public record CreateWaitingRoomRequest(
                 .gameRoomCode("")
                 .gameType(WaitingRooms.GameType.Contest)
                 .maxParticipants(null)
-                .isPublic(true)
                 .isStarted(false)
                 .build();
     }
