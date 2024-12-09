@@ -26,8 +26,6 @@ public class ParticipantsInfo {
     private String nickname;
     @Column(name="game_type")
     private String gameType;
-    @Column(name="is_public")
-    private boolean isPublic;
 
     public ParticipantsInfo(String userId, String nickname) {
         this.userId = userId;

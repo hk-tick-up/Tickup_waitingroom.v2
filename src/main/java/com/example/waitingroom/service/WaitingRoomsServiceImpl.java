@@ -70,21 +70,14 @@ public class WaitingRoomsServiceImpl implements WaitingRoomsService {
         WaitingRooms waitingRoom = waitingRoomRepository.findByGameRoomCode(gameRoomCode);
         validateUserSession(httpRequest);
 
-        if(waitingRoom == null) {
-            throw new IllegalArgumentException("존재하지 않는 게임방입니다.");
-        }
+        if(waitingRoom == null) throw new IllegalArgumentException("존재하지 않는 게임방입니다.");
 
-        if(waitingRoom.isPublic()) {
-            throw new IllegalArgumentException("해당 게임방에는 입장할 수 없습니다.");
-        }
+        if(waitingRoom.getGameType() == WaitingRooms.GameType.Basic) throw new IllegalArgumentException("해당 게임방은 입장할 수 없습니다.");
 
-        if(waitingRoom.isStarted()) {
-           throw new IllegalArgumentException("이미 게임이 시작한 방입니다.");
-        }
+        if(waitingRoom.isStarted()) throw new IllegalArgumentException("이미 게임이 시작한 방입니다.");
 
-        if(!waitingRoom.incrementParticipants()) {
-            throw new IllegalArgumentException("방이 가득 찼습니다.");
-        }
+        if(!waitingRoom.incrementParticipants()) throw new IllegalArgumentException("방이 가득 찼습니다.");
+
 
         addParticipantToRoom(waitingRoom.getId(), httpRequest);
         return waitingRoomRepository.save(waitingRoom);

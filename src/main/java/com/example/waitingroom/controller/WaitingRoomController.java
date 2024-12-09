@@ -43,7 +43,7 @@ public class WaitingRoomController {
     @PostMapping("/join/contest")
     public ResponseEntity<?> joinContestWaitingRoom(@PathVariable String gameRoomId) {
         WaitingRooms waitingRoom = waitingRoomsService.joinContestWaitingRoom(Long.valueOf(gameRoomId));
-        return ResponseEntity.ok(waitingRoom);
+        return getResponseEntity(waitingRoom);
     }
 
     @PostMapping("/random-join")
@@ -57,7 +57,7 @@ public class WaitingRoomController {
             Map<String, Object> response = new HashMap<>();
             response.put("roomId", room.getId());
             response.put("gameRoomCode", room.getGameRoomCode());
-            response.put("isPublic", room.isPublic());
+            response.put("gameType", room.getGameType());
             return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.notFound().build();
