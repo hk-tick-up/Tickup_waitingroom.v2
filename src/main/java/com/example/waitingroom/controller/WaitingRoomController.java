@@ -24,7 +24,6 @@ public class WaitingRoomController {
     @PostMapping("/create-private")
     public ResponseEntity<?> createPrivateWaitingRoom(@RequestBody CreateWaitingRoomRequest CWReq, HttpServletRequest HSReq) {
         WaitingRooms newWaitingRoom = waitingRoomsService.createWaitingGameRoom(CWReq, HSReq);
-        System.out.println(HSReq.getSession());
         return ResponseEntity.ok(newWaitingRoom);
     }
 
