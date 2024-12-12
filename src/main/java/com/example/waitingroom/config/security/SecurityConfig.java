@@ -1,13 +1,15 @@
 package com.example.waitingroom.config.security;
 
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,33 +35,38 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers(
-                            "/game/**",
-                            "/waiting-room/**",
-                                    "/ws",
+                    auth
+                            .requestMatchers(
+                                        "/game",
+                                    "/game/**",
+                                    "/ws/**",
                                     "/topic/**",
                                     "/app/**",
-                                    urlPrefix + "/create-private",  // WaitingRoom의 엔드포인트들
-                                    urlPrefix + "/create-contest",
-                                    urlPrefix + "/join/**",
-                                    urlPrefix + "/random-join",
-                                    "/error"
+                                    "/queue/**",
+                                    "/user/**",
+                                    "/socket/**"
                             ).permitAll()
-                            .anyRequest().permitAll();
+                            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // OPTIONS 요청 허용
+                            .anyRequest().authenticated();
                 })
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
-                        UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(exceptions -> exceptions
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                            response.setContentType("application/json");
-                            response.getWriter().write("{\"message\": \"Unauthorized\"}");
-                        })
-                );
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider) {
+                    @Override
+                    protected boolean shouldNotFilter(HttpServletRequest request) {
+                        String path = request.getRequestURI();
+                        return path.startsWith("/ws") ||
+                                path.startsWith("/socket") ||
+                                path.startsWith("/topic") ||
+                                path.startsWith("/game") ||
+                                path.startsWith("/app") ||
+                                path.startsWith("/queue") ||
+                                path.startsWith("/user") ||
+                                path.startsWith("/api/v1/users/sign-in");
+                    }
+                }, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -69,25 +76,23 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(List.of(
                 "http://192.168.1.6:3000",
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "http://192.168.45.244:3000"
         ));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
-        configuration.setAllowedHeaders(List.of(
-                "Authorization",
-                "Content-Type",
-                "X-Requested-With",
-                "accept",
-                "Origin",
-                "Access-Control-Request-Method",
-                "Access-Control-Request-Headers"
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of(
+                "Access-Control-Allow-Origin",
+                "Access-Control-Allow-Credentials",
+                "Authorization"
         ));
-        configuration.setExposedHeaders(List.of("Access-Control-Allow-Origin"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -99,4 +104,3 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 }
-

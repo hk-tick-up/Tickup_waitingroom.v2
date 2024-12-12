@@ -23,5 +23,6 @@ public interface WaitingRoomsService {
     List<ParticipantsInfo> getParticipantsFromRedis(Long gameRoomId);
     void removeParticipantsFromRoom(Long roomId, String userId);
     void decrementParticipants(Long gameRoomId);
+
 }
 

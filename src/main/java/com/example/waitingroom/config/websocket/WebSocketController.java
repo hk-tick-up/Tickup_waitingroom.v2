@@ -1,10 +1,10 @@
 package com.example.waitingroom.config.websocket;
 
 import com.example.waitingroom.domain.ParticipantsInfo;
+import com.example.waitingroom.domain.User;
 import com.example.waitingroom.repository.RedisParticipantsRepository;
 import com.example.waitingroom.repository.WaitingRoomRepository;
 import com.example.waitingroom.service.WaitingRoomsService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -12,8 +12,10 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
 @RequiredArgsConstructor
@@ -21,16 +23,20 @@ public class WebSocketController {
     private final RedisParticipantsRepository redisParticipantsRepository;
     private final WaitingRoomsService waitingRoomsService;
     private final WaitingRoomRepository waitingRoomRepository;
+    private final Map<Long, List<User>> roomUsers = new ConcurrentHashMap<>();
 
     @MessageMapping("/waiting-room/{gameRoomId}")
     @SendTo("/topic/waiting-room/{gameRoomId}")
-    public List<ParticipantsInfo> addParticipant(
+    public List<User> addParticipant(
             @DestinationVariable Long gameRoomId,
-            ParticipantsInfo participant,
-            HttpServletRequest request
+            User user  // HttpServletRequest 제거
     ) {
-        waitingRoomsService.addParticipantToRoom(gameRoomId, request);
-        return redisParticipantsRepository.getParticipants(gameRoomId);
+        List<User> users = roomUsers.getOrDefault(gameRoomId, new ArrayList<>());
+        if (users.stream().noneMatch(u -> u.getId().equals(user.getId()))) {
+            users.add(user);
+            roomUsers.put(gameRoomId, users);
+        }
+        return users;
     }
 
 

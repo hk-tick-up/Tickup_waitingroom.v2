@@ -1,6 +1,7 @@
 package com.example.waitingroom.config.security;
 
-import com.example.user.entity.User;
+//import com.example.user.entity.User;
+import com.example.waitingroom.domain.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
