@@ -17,5 +17,5 @@ public interface WaitingRoomRepository extends JpaRepository<WaitingRooms,Long> 
     @Query("SELECT wr FROM WaitingRooms wr WHERE wr.id = :id")
     WaitingRooms findWaitingRoomsById(@Param("id") Long id);
 
-//    void deleteById(Long id);
+
 }
