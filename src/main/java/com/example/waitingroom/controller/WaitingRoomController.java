@@ -29,7 +29,7 @@ public class WaitingRoomController {
     }
 
     // -->수정요망.
-    @PostMapping("/join/{gameRoomId}")
+    @PostMapping("/join/{gameRoomCode}")
     public ResponseEntity<?> joinPrivateWaitingRoom(@PathVariable String gameRoomCode) {
         WaitingRooms waitingRoom = waitingRoomsService.findRoomIdByCode(gameRoomCode);
         waitingRoomsService.incrementParticipants(waitingRoom.getId());

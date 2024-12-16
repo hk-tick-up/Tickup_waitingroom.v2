@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,6 +24,7 @@ public class ParticipantRepository {
     public void save(Long roomId, ParticipantsInfo participants) {
         String key = generateKey(roomId);
         redisTemplate.opsForHash().put(key, String.valueOf(participants.getOrderNum()), participants);
+        redisTemplate.expire(key, Duration.ofDays(7));
     }
 
 //    public Integer findMaxOrderNumByRoomId(Long roomId) {
@@ -58,6 +60,7 @@ public class ParticipantRepository {
                                 .nickname((String) map.get("nickname"))
                                 .gameType((String) map.get("gameType"))
                                 .currentRoomId(Long.parseLong(map.get("currentRoomId").toString()))
+                                .userStatus((String) map.get("userStatus")) // userStatus 필드 추가
                                 .build();
                     } else {
                         throw new IllegalStateException("Unexpected data type: " + obj.getClass());

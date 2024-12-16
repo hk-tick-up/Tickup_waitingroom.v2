@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,12 +24,11 @@ public class ParticipantService {
 
         List<ParticipantsInfo> currentParticipants = participantRepository.findAllByRoomId(roomId);
 
-        // 이미 참가한 사용자인지 확인
         boolean isAlreadyParticipant = currentParticipants.stream()
                 .anyMatch(p -> p.getUserId().equals(participants.getUserId()));
 
         if (isAlreadyParticipant) {
-            return; // 이미 참가한 사용자면 추가하지 않음
+            return;
         }
 
         if (currentParticipants.size() >= 5) {
@@ -37,6 +37,9 @@ public class ParticipantService {
 
         Integer newOrderNum = currentParticipants.size() + 1;
         ParticipantsInfo newParticipant = participants.participantsInfoOrderNum(newOrderNum);
+        if (newParticipant.getUserStatus() == null) {
+            newParticipant = newParticipant.updateUserStatus("대기중");
+        }
         participantRepository.save(roomId, newParticipant);
     }
     
@@ -48,9 +51,20 @@ public class ParticipantService {
         participantRepository.deleteByRoomIdAndParticipantsId(roomId, participantsId);
     }
 
+    public void updateParticipantStatus(Long gameRoomId, String userId, String newStatus) {
+        List<ParticipantsInfo> participants = participantRepository.findAllByRoomId(gameRoomId);
+
+        ParticipantsInfo participantToUpdate = participants.stream()
+                .filter(p -> p.getUserId().equals(userId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("참가자를 찾을 수 없습니다."));
+
+        ParticipantsInfo updatedParticipant = participantToUpdate.updateUserStatus(newStatus);
+        participantRepository.save(gameRoomId, updatedParticipant);
+    }
+
     public List<ParticipantsInfo> participantsList(Long roomId) {
         return participantRepository.findAllByRoomId(roomId);
     }
-
 
 }

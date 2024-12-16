@@ -50,6 +50,20 @@ public class WebSocketController {
         return participantService.participantsList(gameRoomId);
     }
 
+    @MessageMapping("/waiting-room/{gameRoomId}/status")
+    @SendTo("/topic/waiting-room/{gameRoomId}")
+    public List<ParticipantsInfo> handleStatusUpdate(
+        @DestinationVariable Long gameRoomId,
+        @Payload Map<String, Object> statusUpdate
+    ){
+        String userId = (String)statusUpdate.get("userId");
+        String newStatus = (String)statusUpdate.get("userStatus");
+
+        participantService.updateParticipantStatus(gameRoomId, userId, newStatus);
+
+        return participantService.participantsList(gameRoomId);
+    }
+
     @MessageMapping("/waiting-room/leave/{gameRoomId}")
     @SendTo("/topic/waiting-room/{gameRoomId}")
     public List<ParticipantsInfo> handleLeaveRoom(

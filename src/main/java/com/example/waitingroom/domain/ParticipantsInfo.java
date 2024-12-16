@@ -21,11 +21,14 @@ public class ParticipantsInfo {
     private String gameType;
     @Column(name="waiting_room_id")
     private Long currentRoomId;
+    @Column(name="user_status")
+    private String userStatus;
 
-    public ParticipantsInfo(String userId, String nickname, Integer orderNum) {
+    public ParticipantsInfo(String userId, String nickname, Integer orderNum, String userStatus) {
         this.userId = userId;
         this.nickname = nickname;
         this.orderNum = orderNum;
+        this.userStatus = userStatus;
     }
 
     public ParticipantsInfo participantsInfoOrderNum(Integer newOrderNum) {
@@ -35,6 +38,18 @@ public class ParticipantsInfo {
                 .nickname(this.nickname)
                 .gameType(this.gameType)
                 .currentRoomId(this.currentRoomId)
+                .userStatus(this.userStatus)
+                .build();
+    }
+
+    public ParticipantsInfo updateUserStatus(String newStatus) {
+        return ParticipantsInfo.builder()
+                .orderNum(this.orderNum)
+                .userId(this.userId)
+                .nickname(this.nickname)
+                .gameType(this.gameType)
+                .currentRoomId(this.currentRoomId)
+                .userStatus(newStatus)
                 .build();
     }
 }
