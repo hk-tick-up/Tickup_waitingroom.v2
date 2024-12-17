@@ -25,8 +25,6 @@ public class WaitingRooms {
     private int participants;
     @Column(name="max_participants")
     private Integer maxParticipants;
-//    @Column(name="is_public", updatable = false)
-//    private boolean isPublic;
     @Column(name="is_started")
     private boolean isStarted;
 

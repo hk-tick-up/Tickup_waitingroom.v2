@@ -20,7 +20,7 @@ public class ParticipantsInfo {
     @Column(name="game_type")
     private String gameType;
     @Column(name="waiting_room_id")
-    private Long currentRoomId;
+    private Long waitingRoomId;
     @Column(name="user_status")
     private String userStatus;
 
@@ -37,7 +37,7 @@ public class ParticipantsInfo {
                 .userId(this.userId)
                 .nickname(this.nickname)
                 .gameType(this.gameType)
-                .currentRoomId(this.currentRoomId)
+                .waitingRoomId(this.waitingRoomId)
                 .userStatus(this.userStatus)
                 .build();
     }
@@ -48,7 +48,7 @@ public class ParticipantsInfo {
                 .userId(this.userId)
                 .nickname(this.nickname)
                 .gameType(this.gameType)
-                .currentRoomId(this.currentRoomId)
+                .waitingRoomId(this.waitingRoomId)
                 .userStatus(newStatus)
                 .build();
     }

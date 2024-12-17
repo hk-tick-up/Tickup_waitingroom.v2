@@ -19,10 +19,10 @@ public class ParticipantService {
         }
     }
 
-    public void addParticipant(Long roomId, ParticipantsInfo participants) {
+    public void addParticipant(Long waitingRoomId, ParticipantsInfo participants) {
         validateParticipant(participants);
 
-        List<ParticipantsInfo> currentParticipants = participantRepository.findAllByRoomId(roomId);
+        List<ParticipantsInfo> currentParticipants = participantRepository.findAllByWaitingRoomId(waitingRoomId);
 
         boolean isAlreadyParticipant = currentParticipants.stream()
                 .anyMatch(p -> p.getUserId().equals(participants.getUserId()));
@@ -40,19 +40,19 @@ public class ParticipantService {
         if (newParticipant.getUserStatus() == null) {
             newParticipant = newParticipant.updateUserStatus("대기중");
         }
-        participantRepository.save(roomId, newParticipant);
+        participantRepository.save(waitingRoomId, newParticipant);
     }
     
 //    public List<ParticipantsInfo> removeParticipants(Long roomId, String participantsId) {
 //        participantRepository.deleteByRoomIdAndParticipantsId(roomId, participantsId);
 //        return participantRepository.findAllByRoomId(roomId);
 //    }
-    public void removeParticipants(Long roomId, String participantsId) {
-        participantRepository.deleteByRoomIdAndParticipantsId(roomId, participantsId);
-    }
+public void removeParticipants(Long waitingRoomId, String participantsId) {
+    participantRepository.deleteByWaitingRoomIdAndParticipantsId(waitingRoomId, participantsId);
+}
 
-    public void updateParticipantStatus(Long gameRoomId, String userId, String newStatus) {
-        List<ParticipantsInfo> participants = participantRepository.findAllByRoomId(gameRoomId);
+    public void updateParticipantStatus(Long waitingRoomId, String userId, String newStatus) {
+        List<ParticipantsInfo> participants = participantRepository.findAllByWaitingRoomId(waitingRoomId);
 
         ParticipantsInfo participantToUpdate = participants.stream()
                 .filter(p -> p.getUserId().equals(userId))
@@ -60,11 +60,11 @@ public class ParticipantService {
                 .orElseThrow(() -> new IllegalStateException("참가자를 찾을 수 없습니다."));
 
         ParticipantsInfo updatedParticipant = participantToUpdate.updateUserStatus(newStatus);
-        participantRepository.save(gameRoomId, updatedParticipant);
+        participantRepository.save(waitingRoomId, updatedParticipant);
     }
 
-    public List<ParticipantsInfo> participantsList(Long roomId) {
-        return participantRepository.findAllByRoomId(roomId);
+    public List<ParticipantsInfo> participantsList(Long waitingRoomId) {
+        return participantRepository.findAllByWaitingRoomId(waitingRoomId);
     }
 
 }

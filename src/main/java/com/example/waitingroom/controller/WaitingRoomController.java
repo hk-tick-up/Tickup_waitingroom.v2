@@ -25,7 +25,7 @@ public class WaitingRoomController {
     @PostMapping("/create-private")
     public ResponseEntity<?> createPrivateWaitingRoom(@RequestBody CreateWaitingRoomRequest CWReq, HttpServletRequest HSReq) {
         WaitingRooms newWaitingRoom = waitingRoomsService.createWaitingGameRoom(CWReq, HSReq);
-        return ResponseEntity.ok(newWaitingRoom);
+        return getResponseEntity(newWaitingRoom);
     }
 
     // -->수정요망.
@@ -36,9 +36,9 @@ public class WaitingRoomController {
         return getResponseEntity(waitingRoom);
     }
 
-    @PutMapping("/leave/{gameRoomId}")
-    public ResponseEntity<?> leaveTheRoom(@PathVariable Long gameRoomId) {
-        waitingRoomsService.decrementParticipants(gameRoomId);
+    @PutMapping("/leave/{waitingRoomId}")
+    public ResponseEntity<?> leaveTheRoom(@PathVariable Long waitingRoomId) {
+        waitingRoomsService.decrementParticipants(waitingRoomId);
         return ResponseEntity.ok("방을 성공적으로 나갔습니다.");
     }
 
@@ -48,12 +48,12 @@ public class WaitingRoomController {
         return getResponseEntity(room);
     }
 
-    private ResponseEntity<?> getResponseEntity(WaitingRooms room) {
-        if (room != null) {
+    private ResponseEntity<?> getResponseEntity(WaitingRooms waitingRooms) {
+        if (waitingRooms != null) {
             Map<String, Object> response = new HashMap<>();
-            response.put("roomId", room.getId());
-            response.put("gameRoomCode", room.getGameRoomCode());
-            response.put("gameType", room.getGameType());
+            response.put("waitingRoomId", waitingRooms.getId());
+            response.put("gameRoomCode", waitingRooms.getGameRoomCode());
+            response.put("gameType", waitingRooms.getGameType());
             return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.notFound().build();
@@ -67,12 +67,10 @@ public class WaitingRoomController {
     }
 
     @PostMapping("/join/contest")
-    public ResponseEntity<?> joinContestWaitingRoom(@PathVariable String gameRoomId) {
-        WaitingRooms waitingRoom = waitingRoomsService.joinContestWaitingRoom(Long.valueOf(gameRoomId));
+    public ResponseEntity<?> joinContestWaitingRoom(@PathVariable String waitingRoomId) {
+        WaitingRooms waitingRoom = waitingRoomsService.joinContestWaitingRoom(Long.valueOf(waitingRoomId));
         return getResponseEntity(waitingRoom);
     }
-
-
 
 //    @GetMapping("/participants/{waitingRoomId}")
 //    public ResponseEntity<List<ParticipantsInfo>> getParticipants(@PathVariable Long waitingRoomId) {

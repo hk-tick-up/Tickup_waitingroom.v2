@@ -48,7 +48,9 @@ public class SecurityConfig {
                                     "/app/**",
                                     "/queue/**",
                                     "/user/**",
-                                    "/socket/**"
+                                    "/socket/**",
+                                    "/api",
+                                    "/api/**"
                             ).permitAll()
                             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // OPTIONS 요청 허용
                             .anyRequest().authenticated();

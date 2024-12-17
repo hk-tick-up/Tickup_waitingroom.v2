@@ -18,7 +18,6 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,7 +30,7 @@ public class WebSocketController {
     private final WaitingRoomsService waitingRoomsService;
     private final WaitingRoomRepository waitingRoomRepository;
 
-    private final Map<Long, List<User>> roomUsers = new ConcurrentHashMap<>();
+//    private final Map<Long, List<User>> roomUsers = new ConcurrentHashMap<>();
 
     @EventListener
     public void handleWebSocketConnectListener(SessionConnectedEvent event) {
@@ -39,41 +38,41 @@ public class WebSocketController {
         String sessionId = headerAccessor.getSessionId();
     }
 
-    @MessageMapping("/waiting-room/{gameRoomId}")
-    @SendTo("/topic/waiting-room/{gameRoomId}")
+    @MessageMapping("/waiting-room/{waitingRoomId}")
+    @SendTo("/topic/waiting-room/{waitingRoomId}")
     public List<ParticipantsInfo> addParticipant(
-            @DestinationVariable Long gameRoomId,
+            @DestinationVariable Long waitingRoomId,
             @Payload ParticipantsInfo participants
     ) {
-        participantService.addParticipant(gameRoomId, participants);
+        participantService.addParticipant(waitingRoomId, participants);
 
-        return participantService.participantsList(gameRoomId);
+        return participantService.participantsList(waitingRoomId);
     }
 
-    @MessageMapping("/waiting-room/{gameRoomId}/status")
-    @SendTo("/topic/waiting-room/{gameRoomId}")
+    @MessageMapping("/waiting-room/{waitingRoomId}/status")
+    @SendTo("/topic/waiting-room/{waitingRoomId}")
     public List<ParticipantsInfo> handleStatusUpdate(
-        @DestinationVariable Long gameRoomId,
-        @Payload Map<String, Object> statusUpdate
+            @DestinationVariable Long waitingRoomId,
+            @Payload Map<String, Object> statusUpdate
     ){
         String userId = (String)statusUpdate.get("userId");
         String newStatus = (String)statusUpdate.get("userStatus");
 
-        participantService.updateParticipantStatus(gameRoomId, userId, newStatus);
+        participantService.updateParticipantStatus(waitingRoomId, userId, newStatus);
 
-        return participantService.participantsList(gameRoomId);
+        return participantService.participantsList(waitingRoomId);
     }
 
-    @MessageMapping("/waiting-room/leave/{gameRoomId}")
-    @SendTo("/topic/waiting-room/{gameRoomId}")
+    @MessageMapping("/waiting-room/leave/{waitingRoomId}")
+    @SendTo("/topic/waiting-room/{waitingRoomId}")
     public List<ParticipantsInfo> handleLeaveRoom(
-            @DestinationVariable Long gameRoomId,
+            @DestinationVariable Long waitingRoomId,
             @Payload ParticipantsInfo participants
     ) {
         String userId = participants.getUserId();
 
-        participantService.removeParticipants(gameRoomId, userId);
-        return participantService.participantsList(gameRoomId);
+        participantService.removeParticipants(waitingRoomId, userId);
+        return participantService.participantsList(waitingRoomId);
     }
 
 //    @MessageMapping("/waiting-room/{gameRoomId}/status")

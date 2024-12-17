@@ -43,9 +43,7 @@ public class WaitingRoomsServiceImpl implements WaitingRoomsService {
         throw new IllegalArgumentException("유효한 토큰이 없습니다.");
     }
 
-    //private room 만드는 API
     public WaitingRooms createWaitingGameRoom(CreateWaitingRoomRequest CWReq, HttpServletRequest httpRequest) {
-        // JWT 토큰에서 유저 정보 추출
         String token = extractToken(httpRequest);
         validateUserToken(token);
 
@@ -62,7 +60,6 @@ public class WaitingRoomsServiceImpl implements WaitingRoomsService {
         return waitingRoomRepository.save(newWaitingRoom);
     }
 
-    //private room 참여하는 API
     public WaitingRooms joinPrivateWaitingRoom(String gameRoomCode, HttpServletRequest httpRequest) {
         WaitingRooms waitingRoom = waitingRoomRepository.findByGameRoomCode(gameRoomCode);
         validateUserSession(httpRequest);
@@ -79,9 +76,9 @@ public class WaitingRoomsServiceImpl implements WaitingRoomsService {
         return waitingRoomRepository.save(waitingRoom);
     }
 
+
     //랜덤 공개방을 만들거나 참여하는 API
     public WaitingRooms createOrJoinPublicRoom(CreateWaitingRoomRequest req) {
-//        validateUserSession(httpRequest);
         WaitingRooms.GameType GameType = null;
 
         if (req.GameType() == WaitingRooms.GameType.Contest && !req.userRole().equals("Admin")) {
@@ -113,25 +110,25 @@ public class WaitingRoomsServiceImpl implements WaitingRoomsService {
         return savedRoom;
     }
 
-    public void incrementParticipants(Long gameRoomId) {
-        WaitingRooms waitingRoom = waitingRoomRepository.findWaitingRoomsById(gameRoomId);
+    public void incrementParticipants(Long waitingRoomId) {
+        WaitingRooms waitingRoom = waitingRoomRepository.findWaitingRoomsById(waitingRoomId);
         if (waitingRoom == null ) throw new IllegalArgumentException("존재하지 않는 방입니다.");
         if(!waitingRoom.incrementParticipants()) throw new IllegalArgumentException("참가자 수 증가 실패");
 
         waitingRoomRepository.save(waitingRoom);
-        if(waitingRoom.getParticipants() == 0) waitingRoomRepository.deleteById(gameRoomId);
+        if(waitingRoom.getParticipants() == 0) waitingRoomRepository.deleteById(waitingRoomId);
 
     }
 
     @Transactional
-    public WaitingRooms decrementParticipants(Long gameRoomId) {
-        WaitingRooms waitingRooms = waitingRoomRepository.findWaitingRoomsById(gameRoomId);
+    public WaitingRooms decrementParticipants(Long waitingRoomId) {
+        WaitingRooms waitingRooms = waitingRoomRepository.findWaitingRoomsById(waitingRoomId);
         if (waitingRooms == null ) throw new IllegalArgumentException("존재하지 않는 방입니다.");
         if (!waitingRooms.decrementParticipants()) throw new IllegalArgumentException("참가자 수 감소 실패");
 
         waitingRoomRepository.save(waitingRooms);
 
-        if (waitingRooms.getParticipants() == 0 ) waitingRoomRepository.deleteById(gameRoomId);
+        if (waitingRooms.getParticipants() == 0 ) waitingRoomRepository.deleteById(waitingRoomId);
         return waitingRooms;
     }
 
@@ -143,6 +140,10 @@ public class WaitingRoomsServiceImpl implements WaitingRoomsService {
         if(userId == null || userName == null) {
             throw new IllegalArgumentException("세션에 유저 정보가 없습니다.");
         }
+    }
+
+    public WaitingRooms findRoomIdByCode(String gameRoomCode) {
+        return waitingRoomRepository.findByGameRoomCode(gameRoomCode);
     }
 
 //    public List<ParticipantsInfo> getParticipantsFromRedis(Long gameRoomId) {
@@ -191,9 +192,7 @@ public class WaitingRoomsServiceImpl implements WaitingRoomsService {
 //        );
 //    }
 
-    public WaitingRooms findRoomIdByCode(String gameRoomCode) {
-        return waitingRoomRepository.findByGameRoomCode(gameRoomCode);
-    }
+
 
     //Contest 방 만드는 API
     public WaitingRooms createContestWaitingRoom(CreateWaitingRoomRequest req) {
@@ -210,8 +209,8 @@ public class WaitingRoomsServiceImpl implements WaitingRoomsService {
     }
 
     //Contest 방 참여하는 API
-    public WaitingRooms joinContestWaitingRoom(Long gameRoomId) {
-        WaitingRooms waitingRoom = waitingRoomRepository.findWaitingRoomsById(gameRoomId);
+    public WaitingRooms joinContestWaitingRoom(Long waitingRoomId) {
+        WaitingRooms waitingRoom = waitingRoomRepository.findWaitingRoomsById(waitingRoomId);
         if(waitingRoom == null ){
             throw new IllegalArgumentException("존재하지 않는 게임방입니다.");
         }

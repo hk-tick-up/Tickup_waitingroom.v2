@@ -13,13 +13,10 @@ public interface WaitingRoomsService {
     WaitingRooms joinPrivateWaitingRoom(String gameRoomCode, HttpServletRequest httpRequest);
     WaitingRooms createOrJoinPublicRoom(CreateWaitingRoomRequest req);
     WaitingRooms createContestWaitingRoom(CreateWaitingRoomRequest req);
-    WaitingRooms joinContestWaitingRoom(Long gameRoomId);
-    void incrementParticipants(Long gameRoomId);
-//    void addParticipantToRoom(Long gameRoomId, HttpServletRequest httpRequest);
+    WaitingRooms joinContestWaitingRoom(Long waitingRoomId);
+    void incrementParticipants(Long waitingRoomId);
     void validateUserSession(HttpServletRequest httpRequest);
-//    List<ParticipantsInfo> getParticipantsFromRedis(Long gameRoomId);
-//    void removeParticipantsFromRoom(Long roomId, String userId);
-    WaitingRooms decrementParticipants(Long gameRoomId);
+    WaitingRooms decrementParticipants(Long waitingRoomId);
 
 }
 

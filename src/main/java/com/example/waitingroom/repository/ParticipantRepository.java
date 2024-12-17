@@ -17,36 +17,18 @@ import java.util.List;
 public class ParticipantRepository {
     private final RedisTemplate<String, Object> redisTemplate;
 
-    private String generateKey(Long roomId){
-            return "room_No." + roomId;
-        }
+    private String generateKey(Long waitingRoomId){
+        return "room_No." + waitingRoomId;
+    }
 
-    public void save(Long roomId, ParticipantsInfo participants) {
-        String key = generateKey(roomId);
+    public void save(Long waitingRoomId, ParticipantsInfo participants) {
+        String key = generateKey(waitingRoomId);
         redisTemplate.opsForHash().put(key, String.valueOf(participants.getOrderNum()), participants);
         redisTemplate.expire(key, Duration.ofDays(7));
     }
 
-//    public Integer findMaxOrderNumByRoomId(Long roomId) {
-//        String key = generateKey(roomId);
-//        List<Object> participantsData = new ArrayList<>(redisTemplate.opsForHash().values(key));
-//
-//        return participantsData.stream()
-//                .map(obj -> {
-//                    if (obj instanceof ParticipantsInfo) {
-//                        return ((ParticipantsInfo) obj).getOrderNum();
-//                    } else if (obj instanceof LinkedHashMap) {
-//                        return (Integer) ((LinkedHashMap) obj).get("orderNum");
-//                    } else {
-//                        throw new IllegalStateException("Unexpected data type: " + obj.getClass());
-//                    }
-//                })
-//                .max(Integer::compareTo)
-//                .orElse(0);
-//    }
-
-    public List<ParticipantsInfo> findAllByRoomId(Long roomId) {
-        String key = generateKey(roomId);
+    public List<ParticipantsInfo> findAllByWaitingRoomId(Long waitingRoomId) {
+        String key = generateKey(waitingRoomId);
         return new ArrayList<>(redisTemplate.opsForHash().values(key))
                 .stream()
                 .map(obj -> {
@@ -59,8 +41,8 @@ public class ParticipantRepository {
                                 .userId((String) map.get("userId"))
                                 .nickname((String) map.get("nickname"))
                                 .gameType((String) map.get("gameType"))
-                                .currentRoomId(Long.parseLong(map.get("currentRoomId").toString()))
-                                .userStatus((String) map.get("userStatus")) // userStatus 필드 추가
+                                .waitingRoomId(Long.parseLong(map.get("waitingRoomId").toString()))
+                                .userStatus((String) map.get("userStatus"))
                                 .build();
                     } else {
                         throw new IllegalStateException("Unexpected data type: " + obj.getClass());
@@ -69,10 +51,10 @@ public class ParticipantRepository {
                 .toList();
     }
 
-    public void deleteByRoomIdAndParticipantsId(Long roomId, String participantsId) {
-        String key = generateKey(roomId);
+    public void deleteByWaitingRoomIdAndParticipantsId(Long waitingRoomId, String participantsId) {
+        String key = generateKey(waitingRoomId);
         // 현재 참가자 목록 조회
-        List<ParticipantsInfo> participants = findAllByRoomId(roomId);
+        List<ParticipantsInfo> participants = findAllByWaitingRoomId(waitingRoomId);
 
         // 삭제할 참가자 찾기
         ParticipantsInfo targetParticipant = participants.stream()
@@ -83,15 +65,15 @@ public class ParticipantRepository {
         if (targetParticipant != null) {
             redisTemplate.opsForHash().delete(key, String.valueOf(targetParticipant.getOrderNum()));
 
-            List<ParticipantsInfo> remainingParticipants = findAllByRoomId(roomId);
+            List<ParticipantsInfo> remainingParticipants = findAllByWaitingRoomId(waitingRoomId);
             if (remainingParticipants.isEmpty()) {
                 redisTemplate.delete(key);
             }
         }
     }
 
-    public void deleteAllByRoomId(Long roomId) {
-        String key = generateKey(roomId);
-        redisTemplate.delete(key);
-    }
+//    public void deleteAllByRoomId(Long roomId) {
+//        String key = generateKey(roomId);
+//        redisTemplate.delete(key);
+//    }
 }

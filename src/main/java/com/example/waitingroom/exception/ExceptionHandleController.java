@@ -26,4 +26,9 @@ public class ExceptionHandleController {
         errorResponse.put("message", e.getMessage());
         return ResponseEntity.badRequest().body(errorResponse);
     }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<String> handleIllegalStateException(IllegalStateException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
 }
